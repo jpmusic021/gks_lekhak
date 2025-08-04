@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>સામાન્ય જ્ઞાન ક્વિઝ</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Vadodara:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Hind Vadodara', sans-serif;
+            background-color: #e0f7fa; /* Light Blue Background */
+        }
+
+        .quiz-container {
+            transition: all 0.3s ease;
+        }
+
+        .option-btn {
+            transition: all 0.2s ease-in-out;
+        }
+
+        .option-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .nav-btn {
+            transition: all 0.2s ease-in-out;
+        }
+
+        .nav-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .correct {
+            background-color: #28a745 !important; /* Green */
+            color: white !important;
+            border-color: #28a745 !important;
+        }
+
+        .wrong {
+            background-color: #dc3545 !important; /* Red */
+            color: white !important;
+            border-color: #dc3545 !important;
+        }
+        
+        .disabled-option {
+            pointer-events: none;
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+
+    <div class="quiz-container bg-white w-full max-w-2xl rounded-2xl shadow-2xl p-6 md:p-8">
+        <!-- Header -->
+        <div class="flex justify-between items-center border-b-2 border-gray-200 pb-4 mb-6">
+            <h1 class="text-2xl md:text-3xl font-bold text-cyan-800">સામાન્ય જ્ઞાન ક્વિઝ</h1>
+            <div class="flex space-x-4 text-lg font-semibold">
+                <span class="text-green-600">સાચા: <span id="correct-score">0</span></span>
+                <span class="text-red-600">ખોટા: <span id="wrong-score">0</span></span>
+            </div>
+        </div>
+
+        <!-- Question Area -->
+        <div id="question-area">
+            <h2 id="question-text" class="text-xl md:text-2xl font-semibold text-gray-800 mb-6 min-h-[80px]">ક્વિઝ લોડ થઈ રહી છે...</h2>
+            <div id="options-container" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Options will be inserted here by JS -->
+            </div>
+        </div>
+
+        <!-- Explanation Area -->
+        <div id="explanation-area" class="hidden mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <h3 class="font-bold text-lg text-blue-800 mb-2">સમજૂતી:</h3>
+            <p id="explanation-text" class="text-gray-700"></p>
+        </div>
+
+        <!-- Navigation -->
+        <div class="flex justify-between items-center mt-8 pt-4 border-t-2 border-gray-200">
+            <button id="prev-btn" class="nav-btn bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-6 rounded-lg shadow-md">પાછલો</button>
+            <button id="reset-btn" class="nav-btn bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-6 rounded-lg shadow-md">રીસેટ</button>
+            <button id="next-btn" class="nav-btn bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-2 px-6 rounded-lg shadow-md">આગલો</button>
+        </div>
+    </div>
+
+    <script>
+        // Data extracted from the PDF (Strot 3 to 586)
+        const quizData = [
+            {
+                question: "'લેડી ડોક્ટર્સ: ધ અનટોલ્ડ સ્ટોરીઝ ઓફ ઈન્ડિયાઝ ફર્સ્ટ વુમન ઇન મેડિસિન' પુસ્તકના લેખક કોણ છે?",
+                options: ["કવિતા રાવ", "જયરામ રમેશ", "સામ પિત્રોદા", "બંકિમ ચંદ્ર ચટ્ટોપાધ્યાય"],
+                answer: "કવિતા રાવ",
+                explanation: "આ પુસ્તકમાં ભારતની પ્રથમ મહિલા ડોક્ટર રૂખમાબાઈ રાઉત જેવી મહિલાઓની વાર્તાઓ આપવામાં આવી છે."
+            },
+            {
+                question: "શંકરદેવ દ્વારા રચિત 'ભાવના (Bhaona)'માં કઈ ભાષાનો પ્રયોગ થયો છે?",
+                options: ["બ્રજાવલી", "મૈથિલી", "હિન્દી", "બંગાળી"],
+                answer: "બ્રજાવલી",
+                explanation: "બ્રજાવલી એક સાહિત્યિક મિશ્રિત ભાષા હતી, જેનો શંકરદેવે પોતાના ધાર્મિક નાટકોમાં પ્રયોગ કર્યો હતો."
+            },
+            {
+                question: "'ટુ ધ બ્રિંક એન્ડ બેંક: ઇન્ડિયન 1991 સ્ટોરી' પુસ્તકના લેખક કોણ છે?",
+                options: ["જયરામ રમેશ", "કવિતા રાવ", "સામ પિત્રોદા", "ચેતન ભગત"],
+                answer: "જયરામ રમેશ",
+                explanation: "આ પુસ્તક 1991ના આર્થિક સુધારા અને તત્કાલીન વડાપ્રધાન નરસિંહ રાવના નિર્ણયો પર આધારિત છે."
+            },
+            {
+                question: "'ડ્રીમિંગ બિગ: માય જર્ની ટુ કનેક્ટ ઇન્ડિયા' પુસ્તકના લેખક કોણ છે?",
+                options: ["સામ પિત્રોદા", "સુનીલ ગાવસ્કર", "એ. પી. જે. અબ્દુલ કલામ", "ચેતન ભગત"],
+                answer: "સામ પિત્રોદા",
+                explanation: "સામ પિત્રોડા ભારતમાં ટેલિફોન ક્રાંતિના જનક માનવામાં આવે છે."
+            },
+            {
+                question: "'આનંદમઠ' નવલકથાના લેખક કોણ છે?",
+                options: ["બંકિમ ચંદ્ર ચટ્ટોપાધ્યાય", "રવિન્દ્રનાથ ટાગોર", "શરદચંદ્ર ચટ્ટોપાધ્યાય", "પ્રેમચંદ"],
+                answer: "બંકિમ ચંદ્ર ચટ્ટોપાધ્યાય",
+                explanation: "આ જ નવલકથામાં 'વંદે માતરમ્' ગીત લખવામાં આવ્યું, જે પાછળથી રાષ્ટ્રીય ગીત બન્યું."
+            },
+            {
+                question: "'મેકિંગ ઇન્ડિયા ઓસમ' પુસ્તકના લેખક કોણ છે?",
+                options: ["ચેતન ભગત", "શશિ થરૂર", "અરવિંદ અડિગા", "ખુશવંત સિંહ"],
+                answer: "ચેતન ભગત",
+                explanation: "આ પુસ્તકમાં ભારતની સામાજિક સમસ્યાઓ અને તેમના ઉકેલ પર સૂચનો આપવામાં આવ્યા છે."
+            },
+            {
+                question: "'સ્ટ્રેટ ડ્રાઇવ' પુસ્તકના લેખક કોણ છે?",
+                options: ["સુનીલ ગાવસ્કર", "સચિન તેંડુલકર", "કપિલ દેવ", "યુવરાજ સિંહ"],
+                answer: "સુનીલ ગાવસ્કર",
+                explanation: "આ પુસ્તક પ્રસિદ્ધ ભારતીય ક્રિકેટર સુનીલ ગાવસ્કરની આત્મકથા છે."
+            },
+            {
+                question: "ગીત 'અમાર સોનાર બાંગ્લા' ના રચયિતા કોણ છે?",
+                options: ["રવીન્દ્રનાથ ટાગોર", "બંકિમ ચંદ્ર ચટ્ટોપાધ્યાય", "કાઝી નઝરુલ ઇસ્લામ", "સત્યજીત રે"],
+                answer: "રવીન્દ્રનાથ ટાગોર",
+                explanation: "આ ગીત બાંગ્લાદેશનું રાષ્ટ્રગાન છે અને ટાગોર દ્વારા બંગ-ભંગ આંદોલનના સમયે લખવામાં આવ્યું હતું."
+            },
+            {
+                question: "નીચેનામાંથી કયું પુસ્તક ડો. એ.પી.જે. અબ્દુલ કલામ દ્વારા લખાયેલું નથી?",
+                options: ["માય કંટ્રી, માય લાઇફ", "વિંગ્સ ઓફ ફાયર", "ઇગ્નાઇટેડ માઇન્ડ્સ", "ધ લાઇફ ટ્રી"],
+                answer: "માય કંટ્રી, માય લાઇફ",
+                explanation: "આ પુસ્તક લાલકૃષ્ણ અડવાણી દ્વારા લખવામાં આવ્યું છે."
+            },
+            {
+                question: "કયા ખેલાડીની આત્મકથાનું નામ 'Playing It My Way' છે?",
+                options: ["સચિન તેંડુલકર", "વિરાટ કોહલી", "મહેન્દ્ર સિંહ ધોની", "સુનીલ ગાવસ્કર"],
+                answer: "સચિન તેંડુલકર",
+                explanation: "આ પુસ્તક સચિનના ક્રિકેટ કારકિર્દી અને વ્યક્તિગત જીવનની ઝલક આપે છે."
+            },
+            {
+                question: "'Wings of Fire' પુસ્તક કોણે લખ્યું છે?",
+                options: ["એ.પી.જે. અબ્દુલ કલામ", "જવાહરલાલ નેહરુ", "મહાત્મા ગાંધી", "અટલ બિહારી વાજપેયી"],
+                answer: "એ.પી.જે. અબ્દુલ કલામ",
+                explanation: "આ કલામજીની આત્મકથા છે, જેને અરુણ તિવારી સાથે મળીને લખવામાં આવ્યું હતું."
+            },
+            {
+                question: "રવિન્દ્રનાથ ટાગોરને 'ગીતાંજલિ' માટે નોબેલ પુરસ્કાર ક્યારે મળ્યો હતો?",
+                options: ["1913", "1911", "1921", "1930"],
+                answer: "1913",
+                explanation: "તેઓ નોબેલ પુરસ્કાર મેળવનાર પ્રથમ ભારતીય અને પ્રથમ એશિયન વ્યક્તિ હતા."
+            },
+            {
+                question: "'The White Tiger' ના લેખક કોણ છે?",
+                options: ["અરવિંદ અડિગા", "અરુંધતી રોય", "વિક્રમ સેઠ", "અમિતાભ ઘોષ"],
+                answer: "અરવિંદ અડિગા",
+                explanation: "આ પુસ્તક માટે તેમને 2008 માં મેન બુકર પુરસ્કાર મળ્યો."
+            },
+            {
+                question: "'The God of Small Things' પુસ્તક કોનું છે?",
+                options: ["અરુંધતી રોય", "કિરણ દેસાઈ", "ઝુમ્પા લાહિડી", "અનિતા દેસાઈ"],
+                answer: "અરુંધતી રોય",
+                explanation: "આ નવલકથાને 1997 માં બુકર પુરસ્કાર મળ્યો હતો."
+            },
+            {
+                question: "'The Discovery of India' કોનું પુસ્તક છે?",
+                options: ["જવાહરલાલ નેહરુ", "મહાત્મા ગાંધી", "સરદાર પટેલ", "સુભાષ ચંદ્ર બોઝ"],
+                answer: "જવાહરલાલ નેહરુ",
+                explanation: "આ પુસ્તક 1944 માં લખવામાં આવ્યું હતું."
+            },
+            {
+                question: "'પદ્માવત' ના રચયિતા કોણ છે?",
+                options: ["મલિક મુહમ્મદ જાયસી", "અમીર ખુસરો", "કબીર", "તુલસીદાસ"],
+                answer: "મલિક મુહમ્મદ જાયસી",
+                explanation: "આ એક પ્રસિદ્ધ સૂફી કાવ્ય રચના છે."
+            },
+            {
+                question: "'The Test of My Life' પુસ્તકના લેખક કોણ છે?",
+                options: ["યુવરાજ સિંહ", "સચિન તેંડુલકર", "એમ.એસ. ધોની", "વિરાટ કોહલી"],
+                answer: "યુવરાજ સિંહ",
+                explanation: "આ પુસ્તક તેમના કેન્સર સામે લડવા અને ક્રિકેટમાં વાપસીની વાર્તા છે."
+            },
+            {
+                question: "વિશ્વ પર્યાવરણ દિવસ દર વર્ષે ક્યારે મનાવવામાં આવે છે?",
+                options: ["5 જૂન", "22 એપ્રિલ", "8 માર્ચ", "21 જૂન"],
+                answer: "5 જૂન",
+                explanation: "આ દિવસ 1974 થી પર્યાવરણ સંરક્ષણ માટે મનાવવામાં આવી રહ્યો છે."
+            },
+            {
+                question: "રાષ્ટ્રીય ખેલ દિવસ દર વર્ષે કોના જન્મદિવસ પર મનાવવામાં આવે છે?",
+                options: ["મેજર ધ્યાનચંદ", "સચિન તેંડુલકર", "કપિલ દેવ", "મિલ્ખા સિંહ"],
+                answer: "મેજર ધ્યાનચંદ",
+                explanation: "આ દિવસ હોકીના જાદુગર મેજર ધ્યાનચંદના જન્મદિવસના ઉપલક્ષમાં મનાવવામાં આવે છે."
+            },
+            {
+                question: "ભારતનો બંધારણ દિવસ દર વર્ષે ક્યારે મનાવવામાં આવે છે?",
+                options: ["26 નવેમ્બર", "26 જાન્યુઆરી", "15 ઓગસ્ટ", "2 ઓક્ટોબર"],
+                answer: "26 નવેમ્બર",
+                explanation: "1949 માં આ જ દિવસે ભારતનું બંધારણ અપનાવવામાં આવ્યું હતું."
+            },
+             {
+                question: "આલ્ફ્રેડ નોબેલે શેનો આવિષ્કાર કર્યો હતો?",
+                options: ["ડાયનામાઇટ", "બલ્બ", "ટેલિફોન", "રેડિયો"],
+                answer: "ડાયનામાઇટ",
+                explanation: "આલ્ફ્રેડ નોબેલ એક સ્વીડિશ રસાયણશાસ્ત્રી હતા જેમણે ડાયનામાઇટનો આવિષ્કાર કર્યો."
+            },
+            {
+                question: "સૌથી ઓછી ઉંમરના નોબેલ પુરસ્કાર વિજેતા કોણ છે?",
+                options: ["મલાલા યુસુફઝઈ", "મેરી ક્યુરી", "લોરેન્સ બ્રેગ", "નાદિયા મુરાદ"],
+                answer: "મલાલા યુસુફઝઈ",
+                explanation: "તેમને 17 વર્ષની ઉંમરે 2014 માં શાંતિ માટે નોબેલ પુરસ્કાર મળ્યો."
+            },
+            {
+                question: "દાદા સાહેબ ફાળકે પુરસ્કાર કયા ક્ષેત્ર સાથે સંબંધિત છે?",
+                options: ["સિનેમા", "સાહિત્ય", "રમતગમત", "વિજ્ઞાન"],
+                answer: "સિનેમા",
+                explanation: "આ ભારતીય સિનેમાનો સર્વોચ્ચ પુરસ્કાર છે."
+            },
+            {
+                question: "યુદ્ધ દરમિયાન આપવામાં આવતો સર્વોચ્ચ વીરતા પુરસ્કાર કયો છે?",
+                options: ["પરમવીર ચક્ર", "મહાવીર ચક્ર", "અશોક ચક્ર", "કીર્તિ ચક્ર"],
+                answer: "પરમવીર ચક્ર",
+                explanation: "આ યુદ્ધમાં અદ્વિતીય વીરતા માટે આપવામાં આવે છે."
+            },
+            {
+                question: "બુકર પુરસ્કાર જીતનાર પ્રથમ ભારતીય મહિલા કોણ છે?",
+                options: ["અરુંધતી રોય", "કિરણ દેસાઈ", "અનિતા દેસાઈ", "ઝુમ્પા લાહિડી"],
+                answer: "અરુંધતી રોય",
+                explanation: "તેમણે 1997 માં 'The God of Small Things' માટે પુરસ્કાર જીત્યો."
+            },
+            {
+                question: "ઈન્દિરા ગાંધીની જીવનકથા 'Indira Gandhi: An Intimate Biography' ના લેખક કોણ છે?",
+                options: ["પુપુલ જયકર", "સોનિયા ગાંધી", "પ્રિયંકા ગાંધી", "મેનકા ગાંધી"],
+                answer: "પુપુલ જયકર",
+                explanation: "પુપુલ જયકર ઈન્દિરા ગાંધીના નજીકના અને સાંસ્કૃતિક સલાહકાર હતા."
+            },
+            {
+                question: "નીલાંજના સુદેશનાના નામે પ્રસિદ્ધ ભારતીય મૂળની અમેરિકી લેખિકા કોણ છે?",
+                options: ["ઝુમ્પા લાહિડી", "અરુંધતી રોય", "કિરણ દેસાઈ", "ચિત્રા બેનર્જી દિવાકરુની"],
+                answer: "ઝુમ્પા લાહિડી",
+                explanation: "ઝુમ્પા લાહિડી પોતાની લઘુ કથાઓ અને ઉપન્યાસો 'The Namesake' અને 'Interpreter of Maladies' માટે પ્રસિદ્ધ છે."
+            },
+            {
+                question: "'Life on My Terms' કોની આત્મકથા છે?",
+                options: ["શરદ પવાર", "પ્રણવ મુખર્જી", "લાલકૃષ્ણ અડવાણી", "નરેન્દ્ર મોદી"],
+                answer: "શરદ પવાર",
+                explanation: "આ પુસ્તકમાં શરદ પવારે પોતાના રાજકીય જીવનના અનુભવો રજૂ કર્યા છે."
+            },
+            {
+                question: "'સંવાદ કૌમુદી' અખબાર કોણે શરૂ કર્યું હતું?",
+                options: ["રાજા રામમોહન રાય", "ઈશ્વરચંદ્ર વિદ્યાસાગર", "દયાનંદ સરસ્વતી", "કેશબચંદ્ર સેન"],
+                answer: "રાજા રામમોહન રાય",
+                explanation: "આ પત્ર સમાજ સુધારણા અને જાગૃતિનું માધ્યમ હતું."
+            },
+            {
+                question: "કોણે 'ગુલામગીરી' નામક પુસ્તકમાં જાતિવાદ પર પ્રહાર કર્યો?",
+                options: ["જ્યોતિરાવ ફુલે", "ડો. બી. આર. આંબેડકર", "મહાત્મા ગાંધી", "પેરિયાર ઇ.વી. રામાસામી"],
+                answer: "જ્યોતિરાવ ફુલે",
+                explanation: "આ પુસ્તક 1871 માં પ્રકાશિત થયું હતું અને જાતિ વ્યવસ્થાની આલોચના કરે છે."
+            },
+            {
+                question: "'હિંદ સ્વરાજ' પુસ્તક કોણે લખ્યું હતું?",
+                options: ["મહાત્મા ગાંધી", "જવાહરલાલ નેહરુ", "સરદાર પટેલ", "સુભાષ ચંદ્ર બોઝ"],
+                answer: "મહાત્મા ગાંધી",
+                explanation: "આ પુસ્તક સ્વતંત્રતા સંગ્રામ અને સ્વરાજની વિભાવના પર આધારિત છે."
+            },
+            {
+                question: "કોને 'આધુનિક ભારતની મીરા' કહેવામાં આવે છે?",
+                options: ["મહાદેવી વર્મા", "સુભદ્રા કુમારી ચૌહાણ", "અમૃતા પ્રીતમ", "સરોજિની નાયડુ"],
+                answer: "મહાદેવી વર્મા",
+                explanation: "તે છાયાવાદી યુગની મુખ્ય કવયિત્રી હતી."
+            },
+            {
+                question: "ભગવદ્ ગીતાનો પ્રથમ અંગ્રેજી અનુવાદ કોણે કર્યો હતો?",
+                options: ["ચાર્લ્સ વિલ્કિન્સ", "વિલિયમ જોન્સ", "મેક્સમૂલર", "જેમ્સ પ્રિન્સેપ"],
+                answer: "ચાર્લ્સ વિલ્કિન્સ",
+                explanation: "તેમણે 1785 માં તેનો અનુવાદ કર્યો હતો."
+            },
+            {
+                question: "'વંદે માતરમ્' પત્રિકાની શરૂઆત કોણે કરી હતી?",
+                options: ["બિપિન ચંદ્ર પાલ", "અરબિંદો ઘોષ", "બાલ ગંગાધર તિલક", "લાલા લજપત રાય"],
+                answer: "બિપિન ચંદ્ર પાલ",
+                explanation: "તેમણે આ પત્રિકા બંકિમચંદ્રના ગીતથી પ્રેરિત થઈને શરૂ કરી હતી."
+            },
+            {
+                question: "વિશ્વ ઓઝોન દિવસ દર વર્ષે ક્યારે મનાવવામાં આવે છે?",
+                options: ["16 સપ્ટેમ્બર", "5 જૂન", "22 એપ્રિલ", "7 એપ્રિલ"],
+                answer: "16 સપ્ટેમ્બર",
+                explanation: "આ દિવસ ઓઝોન સ્તરની સુરક્ષા માટે જાગૃતિ વધારવા માટે મનાવવામાં આવે છે."
+            },
+            {
+                question: "ભારતમાં રાષ્ટ્રીય સુશાસન દિવસ કોના જન્મદિવસ પર મનાવવામાં આવે છે?",
+                options: ["અટલ બિહારી વાજપેયી", "જવાહરલાલ નેહરુ", "રાજીવ ગાંધી", "ઇન્દિરા ગાંધી"],
+                answer: "અટલ બિહારી વાજપેયી",
+                explanation: "આ દિવસ પૂર્વ વડાપ્રધાન અટલ બિહારી વાજપેયીના જન્મદિવસ પર મનાવવામાં આવે છે."
+            },
+            {
+                question: "રાષ્ટ્રીય મતદાતા દિવસ ભારતમાં ક્યારે મનાવવામાં આવે છે?",
+                options: ["25 જાન્યુઆરી", "26 જાન્યુઆરી", "15 જાન્યુઆરી", "30 જાન્યુઆરી"],
+                answer: "25 જાન્યુઆરી",
+                explanation: "આ ભારતીય ચૂંટણી પંચની સ્થાપના (1950)ની વર્ષગાંઠ પર મનાવવામાં આવે છે."
+            },
+            {
+                question: "ભારતમાં રાષ્ટ્રીય વિજ્ઞાન દિવસ કોની યાદમાં મનાવવામાં આવે છે?",
+                options: ["સી.વી. રમન", "હોમી જે. ભાભા", "જગદીશ ચંદ્ર બોઝ", "એસ. રામાનુજન"],
+                answer: "સી.વી. રમન",
+                explanation: "આ દિવસ સી.વી. રમન દ્વારા રમન પ્રભાવની શોધની સ્મૃતિમાં મનાવવામાં આવે છે."
+            },
+            {
+                question: "વિશ્વ માનવાધિકાર દિવસ દર વર્ષે ક્યારે મનાવવામાં આવે છે?",
+                options: ["10 ડિસેમ્બર", "24 ઓક્ટોબર", "1 ડિસેમ્બર", "8 માર્ચ"],
+                answer: "10 ડિસેમ્બર",
+                explanation: "આ દિવસે સંયુક્ત રાષ્ટ્રએ માનવાધિકાર ઘોષણા પત્ર (UDHR) ને અપનાવ્યો હતો (1948)."
+            },
+            {
+                question: "ભારતમાં રાષ્ટ્રીય પંચાયતી રાજ દિવસ ક્યારે મનાવવામાં આવે છે?",
+                options: ["24 એપ્રિલ", "21 એપ્રિલ", "2 ઓક્ટોબર", "14 નવેમ્બર"],
+                answer: "24 એપ્રિલ",
+                explanation: "આ દિવસ 73મા બંધારણ સુધારા અધિનિયમના લાગુ થવાની સ્મૃતિમાં મનાવવામાં આવે છે."
+            },
+            {
+                question: "વિંસ્ટન ચર્ચિલને કયા ક્ષેત્રમાં નોબેલ પુરસ્કાર મળ્યો હતો?",
+                options: ["સાહિત્ય", "શાંતિ", "અર્થશાસ્ત્ર", "ભૌતિકશાસ્ત્ર"],
+                answer: "સાહિત્ય",
+                explanation: "1953 માં બ્રિટીશ વડાપ્રધાન વિન્સ્ટન ચર્ચિલને સાહિત્ય માટે નોબેલ પુરસ્કાર મળ્યો."
+            },
+            {
+                question: "પ્રથમ જ્ઞાનપીઠ પુરસ્કાર વિજેતા કોણ હતા?",
+                options: ["જી. શંકર કુરુપ", "તારાશંકર બંદોપાધ્યાય", "ઉમાશંકર જોશી", "સુમિત્રાનંદન પંત"],
+                answer: "જી. શંકર કુરુપ",
+                explanation: "1965 માં મલયાલમ લેખક જી. શંકર કુરુપને પ્રથમ જ્ઞાનપીઠ મળ્યો."
+            },
+            {
+                question: "એ.આર. રહેમાને કયા વર્ષે બે ઓસ્કાર જીત્યા?",
+                options: ["2009", "2007", "2011", "2013"],
+                answer: "2009",
+                explanation: "તેમને 'સ્લમડોગ મિલિયોનેર' માટે બે ઓસ્કાર મળ્યા."
+            },
+            {
+                question: "ગાંધી શાંતિ પુરસ્કાર કોને આપવામાં આવે છે?",
+                options: ["વ્યક્તિ અને સંસ્થા બંનેને", "ફક્ત વ્યક્તિને", "ફક્ત સંસ્થાને", "ફક્ત ભારતીયોને"],
+                answer: "વ્યક્તિ અને સંસ્થા બંનેને",
+                explanation: "આ પુરસ્કાર અહિંસા અને ગાંધીવાદી રીતે કાર્ય કરનારાઓને આપવામાં આવે છે."
+            },
+            {
+                question: "બોર્લોગ પુરસ્કાર કયા ક્ષેત્ર સાથે સંબંધિત છે?",
+                options: ["કૃષિ અને પર્યાવરણ", "પત્રકારત્વ", "રમતગમત", "સિનેમા"],
+                answer: "કૃષિ અને પર્યાવરણ",
+                explanation: "આ કૃષિ સંશોધનમાં ઉત્કૃષ્ટ યોગદાન માટે આપવામાં આવે છે."
+            }
+        ];
+
+
+        // DOM Elements
+        const questionTextEl = document.getElementById('question-text');
+        const optionsContainerEl = document.getElementById('options-container');
+        const explanationAreaEl = document.getElementById('explanation-area');
+        const explanationTextEl = document.getElementById('explanation-text');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const resetBtn = document.getElementById('reset-btn');
+        const correctScoreEl = document.getElementById('correct-score');
+        const wrongScoreEl = document.getElementById('wrong-score');
+
+        // State variables
+        let currentQuestionIndex = 0;
+        let correctScore = 0;
+        let wrongScore = 0;
+        let userAnswers = new Array(quizData.length).fill(null);
+        let answeredQuestions = new Array(quizData.length).fill(false);
+
+
+        function loadQuestion() {
+            // Reset styles and content from previous question
+            explanationAreaEl.classList.add('hidden');
+            optionsContainerEl.innerHTML = '';
+            optionsContainerEl.classList.remove('disabled-option');
+
+            // Get current question data
+            const currentQuestion = quizData[currentQuestionIndex];
+            questionTextEl.innerHTML = `<span class="font-bold">${currentQuestionIndex + 1}.</span> ${currentQuestion.question}`;
+
+            // Create and append option buttons
+            currentQuestion.options.forEach(option => {
+                const button = document.createElement('button');
+                button.innerText = option;
+                button.classList.add('option-btn', 'w-full', 'p-3', 'text-left', 'font-semibold', 'text-gray-700', 'bg-gray-100', 'hover:bg-cyan-100', 'border-2', 'border-gray-200', 'rounded-lg');
+                button.onclick = () => selectOption(button, option);
+                optionsContainerEl.appendChild(button);
+            });
+            
+            updateNavigation();
+            
+            // If the user has already answered this question, show the result
+            if(userAnswers[currentQuestionIndex] !== null) {
+                showPreviousAnswer();
+            }
+        }
+        
+        function selectOption(selectedButton, selectedOption) {
+            // Prevent re-answering
+            if (answeredQuestions[currentQuestionIndex]) return;
+
+            const currentQuestion = quizData[currentQuestionIndex];
+            const correctAnswer = currentQuestion.answer;
+            
+            // Store user's answer and mark as answered
+            userAnswers[currentQuestionIndex] = selectedOption;
+            answeredQuestions[currentQuestionIndex] = true;
+
+            // Disable all options after one is selected
+            optionsContainerEl.classList.add('disabled-option');
+
+            if (selectedOption === correctAnswer) {
+                selectedButton.classList.add('correct');
+                correctScore++;
+            } else {
+                selectedButton.classList.add('wrong');
+                wrongScore++;
+                // Highlight the correct answer
+                Array.from(optionsContainerEl.children).forEach(btn => {
+                    if (btn.innerText === correctAnswer) {
+                        btn.classList.add('correct');
+                    }
+                });
+            }
+            
+            // Show explanation
+            explanationTextEl.innerText = currentQuestion.explanation;
+            explanationAreaEl.classList.remove('hidden');
+
+            // Update scores
+            updateScores();
+        }
+        
+        function showPreviousAnswer() {
+            const currentQuestion = quizData[currentQuestionIndex];
+            const userAnswer = userAnswers[currentQuestionIndex];
+            const correctAnswer = currentQuestion.answer;
+
+            optionsContainerEl.classList.add('disabled-option');
+
+            Array.from(optionsContainerEl.children).forEach(btn => {
+                if (btn.innerText === userAnswer) {
+                    if(userAnswer === correctAnswer) {
+                        btn.classList.add('correct');
+                    } else {
+                        btn.classList.add('wrong');
+                    }
+                }
+                // Also highlight the correct answer if the user was wrong
+                if (userAnswer !== correctAnswer && btn.innerText === correctAnswer) {
+                    btn.classList.add('correct');
+                }
+            });
+
+            explanationTextEl.innerText = currentQuestion.explanation;
+            explanationAreaEl.classList.remove('hidden');
+        }
+
+        function updateScores() {
+            correctScoreEl.innerText = correctScore;
+            wrongScoreEl.innerText = wrongScore;
+        }
+
+        function updateNavigation() {
+            prevBtn.disabled = currentQuestionIndex === 0;
+            prevBtn.classList.toggle('opacity-50', prevBtn.disabled);
+            
+            if (currentQuestionIndex === quizData.length - 1) {
+                nextBtn.innerText = 'સમાપ્ત';
+            } else {
+                nextBtn.innerText = 'આગલો';
+            }
+        }
+        
+        function resetQuiz() {
+            currentQuestionIndex = 0;
+            correctScore = 0;
+            wrongScore = 0;
+            userAnswers.fill(null);
+            answeredQuestions.fill(false);
+            updateScores();
+            loadQuestion();
+        }
+
+        // Event Listeners
+        nextBtn.addEventListener('click', () => {
+            if (currentQuestionIndex < quizData.length - 1) {
+                currentQuestionIndex++;
+                loadQuestion();
+            } else {
+                // Show final score summary
+                questionTextEl.innerHTML = `ક્વિઝ પૂર્ણ! તમારો અંતિમ સ્કોર છે: <span class="text-green-600 font-bold">${correctScore}</span> / ${quizData.length}`;
+                optionsContainerEl.innerHTML = '';
+                explanationAreaEl.classList.add('hidden');
+                nextBtn.disabled = true;
+                nextBtn.classList.add('opacity-50');
+                prevBtn.disabled = false;
+                prevBtn.classList.remove('opacity-50');
+
+            }
+        });
+
+        prevBtn.addEventListener('click', () => {
+            if (currentQuestionIndex > 0) {
+                currentQuestionIndex--;
+                loadQuestion();
+                nextBtn.disabled = false;
+                nextBtn.classList.remove('opacity-50');
+            }
+        });
+        
+        resetBtn.addEventListener('click', resetQuiz);
+
+        // Initial Load
+        window.onload = loadQuestion;
+    </script>
+</body>
+</html>
